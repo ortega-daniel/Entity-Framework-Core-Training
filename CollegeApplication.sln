@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32414.318
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CollegeApplication", "CollegeApplication\CollegeApplication.csproj", "{3A53A20E-501E-4F33-BE64-1EF5C93E7834}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Model", "Model\Model.csproj", "{C35DAB03-8F32-4EE8-8539-1EA91AEAEE11}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{40B78227-24DE-4430-A293-AEEF62C632B7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3A53A20E-501E-4F33-BE64-1EF5C93E7834}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A53A20E-501E-4F33-BE64-1EF5C93E7834}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A53A20E-501E-4F33-BE64-1EF5C93E7834}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A53A20E-501E-4F33-BE64-1EF5C93E7834}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C35DAB03-8F32-4EE8-8539-1EA91AEAEE11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C35DAB03-8F32-4EE8-8539-1EA91AEAEE11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C35DAB03-8F32-4EE8-8539-1EA91AEAEE11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C35DAB03-8F32-4EE8-8539-1EA91AEAEE11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40B78227-24DE-4430-A293-AEEF62C632B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40B78227-24DE-4430-A293-AEEF62C632B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40B78227-24DE-4430-A293-AEEF62C632B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40B78227-24DE-4430-A293-AEEF62C632B7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {525EDA26-C6B1-4799-A781-EC2312F7E193}
+	EndGlobalSection
+EndGlobal
