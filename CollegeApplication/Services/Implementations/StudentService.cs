@@ -1,7 +1,9 @@
 ﻿using CollegeApplication.Services.Abstractions;
+using Microsoft.EntityFrameworkCore;
 using Model;
 using Model.Entities;
 using Shared.Dtos;
+using Shared.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +26,137 @@ namespace CollegeApplication.Services.Implementations
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
+            }
+        }
+
+        public StudentDto GetByCodeNumber(string codeNumber) 
+        {
+            var student = _context.Students
+                .Select(s => new StudentDto 
+                { 
+                    Id = s.Id,
+                    CodeNumber = s.CodeNumber,
+                    FirstName = s.FirstName,
+                    LastName = s.LastName,
+                })
+                .FirstOrDefault(s => s.CodeNumber.ToLower().Equals(codeNumber));
+
+            if (student is null)
+                throw new Exception("Student doest not exist");
+
+            return student;
+        }
+
+        public void AssignCourse(CourseAssignmentDto courseAssignment)
+        {
+            var student = _context.Students
+                .FirstOrDefault(s => s.CodeNumber.ToLower().Equals(courseAssignment.StudentCodeNumber));
+
+            if (student is null)
+                throw new ArgumentNullException("Student does not exist");
+
+            var course = _context.Courses.Include(c => c.Enrollments).FirstOrDefault(c => c.Id.Equals(courseAssignment.CourseId));
+
+            if (course is null)
+                throw new ArgumentNullException("Course does not exist");
+
+            if (course.Enrollments.Select(e => e.StudentId).Contains(student.Id))
+                throw new Exception("Student is already enrolled in this course");
+
+            var enrollment = _context.Enrollments.Add(new Enrollment(course.Id, student.Id));
+            _context.SaveChanges();
+
+            student.Enrollments.Add(enrollment.Entity);
+            course.Enrollments.Add(enrollment.Entity);
+            _context.SaveChanges();
+        }
+
+        public List<Enrollment> GetEnrollments(int studentId)
+        {
+            var enrollments = _context.Enrollments
+                .Where(e => e.StudentId == studentId)
+                .Include(e => e.Student)
+                .Include(e => e.Course)
+                .ToList();
+
+            if (!enrollments.Any())
+                throw new Exception("Student is not enrolled in any courses");
+
+            return enrollments;
+        }
+
+        public void AssignGrade(List<GradeAssignmentDto> assignments) 
+        {
+            if (!assignments.Any()) 
+                throw new ArgumentNullException("Assignments list is required");
+
+            foreach (var assignment in assignments)
+            {
+                var enrollment = _context.Enrollments
+                .FirstOrDefault(e => e.StudentId.Equals(assignment.StudentId) && e.CourseId.Equals(assignment.CourseId));
+
+                if (enrollment is null)
+                    throw new Exception("Student is not enrolled in this course");
+
+                enrollment.Grade = assignment.Grade;
+            }
+
+            _context.SaveChanges();
+        }
+
+        public StudentEvaluationDto GetEvaluationByCodeNumber(string codeNumber) 
+        {
+            var enrollments = _context.Enrollments
+                .Where(e => e.Student.CodeNumber.ToLower().Equals(codeNumber.ToLower()))
+                .Select(e => new StudentEnrollmentDto 
+                { 
+                    CourseId = e.Course.Id,
+                    Title = e.Course.Title,
+                    Grade = e.Grade
+                })
+                .ToList();
+
+            var evaluation = _context.Students
+                .Where(s => s.CodeNumber.ToLower().Equals(codeNumber.ToLower()))
+                .Select(s => new StudentEvaluationDto 
+                { 
+                    Student = new StudentDto 
+                    { 
+                        Id = s.Id,
+                        FirstName = s.FirstName,
+                        LastName = s.LastName,
+                        CodeNumber = s.CodeNumber
+                    },
+                    Enrollments = enrollments
+                })
+                .FirstOrDefault();
+
+            if (evaluation is null)
+                throw new ArgumentNullException("Student does not exist");
+
+            if (!enrollments.Any())
+                throw new Exception("Student is not enrolled in any courses, or has been evaluated already");
+
+            return evaluation;
+        }
+
+        public void Evaluate(StudentEvaluationDto evaluation) 
+        {
+            var enrollments = _context.Enrollments.Where(e => e.StudentId.Equals(evaluation.Student.Id)).ToList();
+
+            try
+            {
+                foreach (var enrollment in enrollments)
+                {
+                    var x = evaluation.Enrollments.First(e => e.CourseId.Equals(enrollment.CourseId));
+                    enrollment.Grade = x.Grade;
+                }
+
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
         }
     }

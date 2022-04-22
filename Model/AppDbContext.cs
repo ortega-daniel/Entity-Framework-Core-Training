@@ -4,6 +4,7 @@ using Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,14 +16,15 @@ namespace Model
         public DbSet<Course> Courses { get; set; }
         public DbSet<Enrollment> Enrollments { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            builder.ApplyConfiguration(new StudentConfiguration());
+            builder.ApplyConfiguration(new CourseConfiguration());
+        }
+
         protected override void OnConfiguring(DbContextOptionsBuilder options) 
         {
             options.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=CollegeApp;Integrated Security=True");
-        }
-
-        protected override void OnModelCreating(ModelBuilder builder) 
-        {
-            builder.ApplyConfiguration(new StudentConfiguration());
         }
     }
 }

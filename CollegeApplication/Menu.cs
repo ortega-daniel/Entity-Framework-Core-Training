@@ -2,6 +2,7 @@
 using CollegeApplication.Services.Implementations;
 using Model.Entities;
 using Shared.Dtos;
+using Shared.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +31,7 @@ namespace CollegeApplication
             Console.WriteLine("3) Course enrollment");
             Console.WriteLine("4) Evaluate student performance");
             Console.WriteLine("5) View student performance");
+            Console.WriteLine("6) Esit course");
             Console.WriteLine("0) Exit");
             Console.Write("\nYour option:");
 
@@ -44,6 +46,21 @@ namespace CollegeApplication
                 case "2":
                     Console.Clear();
                     RegisterCourse();
+                    break;
+                case "3":
+                    Console.Clear();
+                    AssignCourse();
+                    break;
+                case "4":
+                    Console.Clear();
+                    AssignGrade();
+                    break;
+                case "5":
+                    Console.Clear();
+                    ViewStudentGrades();
+                    Console.ReadLine();
+                    break;
+                case "6":
                     break;
                 default:
                     break;
@@ -76,7 +93,7 @@ namespace CollegeApplication
             }
             finally 
             {
-                Console.WriteLine("Press enter to continue");
+                Console.Write("Press enter to continue");
                 Console.ReadLine();
             }
         }
@@ -102,7 +119,7 @@ namespace CollegeApplication
             {
                 courseRegistry.Credits = credits;
                 courseRegistry.Validation();
-                _courseService.RegisterStudent(courseRegistry);
+                _courseService.RegisterCourse(courseRegistry);
                 Console.WriteLine("Course registered successfully");
             }
             catch (Exception ex)
@@ -111,9 +128,236 @@ namespace CollegeApplication
             }
             finally
             {
-                Console.WriteLine("Press enter to continue");
+                Console.Write("Press enter to continue");
                 Console.ReadLine();
             }
+        }
+
+        private void AssignCourse() 
+        {
+            var courseAssignment = new CourseAssignmentDto();
+
+            Console.WriteLine("Please enter the required information to assign a course");
+            Console.Write("Student Code Number: ");
+
+            try
+            {
+                courseAssignment.StudentCodeNumber = Console.ReadLine();
+                courseAssignment.ValidateStudentCodeNumber();
+
+                var student = _studentService.GetByCodeNumber(courseAssignment.StudentCodeNumber);
+                var courses = _courseService.GetAllAvailableByStudent(student.Id);
+
+
+                Console.WriteLine($"\nStudent Information\nStudent code number: {student.CodeNumber}\tName: {student.FirstName} {student.LastName}");
+                
+                Console.WriteLine("\nAvailable courses");
+                foreach (var course in courses) 
+                    Console.WriteLine($"Id: {course.Id}\tTitle: {course.Title}\tCredits: {course.Credits}");
+                
+                Console.WriteLine("\nPlease choose a course");
+                Console.Write("Course Id: ");
+                string input = Console.ReadLine();
+
+                if (!Int32.TryParse(input, out int courseId)) 
+                    throw new Exception("'CourseId' must be a numeric value");
+
+                courseAssignment.CourseId = courseId;
+                courseAssignment.ValidateCourseTitle();
+
+                _studentService.AssignCourse(courseAssignment);
+                Console.WriteLine("Successful Enrollment");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                Console.Write("Press enter to continue");
+                Console.ReadLine();
+            }
+        }
+
+        private void AssignGrade() 
+        {
+            Console.WriteLine("Please enter the required information to assign a grade");
+            Console.Write("Student Code Number: ");
+
+            try
+            {
+                string studentCodeNumber = Console.ReadLine().Trim();
+                if (string.IsNullOrEmpty(studentCodeNumber))
+                    throw new Exception("'Student Code Number' is required");
+
+                var student = _studentService.GetByCodeNumber(studentCodeNumber);
+                var enrollments = _studentService.GetEnrollments(student.Id);
+
+                Console.WriteLine($"\nStudent Information\nStudent code number: {student.CodeNumber}\tName: {student.FirstName} {student.LastName}");
+
+                Console.WriteLine("\nEnrolled Courses");
+                foreach (var enrollment in enrollments)
+                    Console.WriteLine($"Id: {enrollment.Course.Id}\tTitle: {enrollment.Course.Title}\tGrade: {enrollment.Grade}");
+
+                List<GradeAssignmentDto> assignments = new();
+
+                while (true) 
+                {
+                    Console.Write("\nCourse Id: ");
+                    string input = Console.ReadLine().Trim();
+
+                    if (!Int32.TryParse(input, out int courseId))
+                        throw new Exception("Course Id must be a numeric value");
+
+                    var grades = Enum.GetNames(typeof(Grade));
+                    string availableGrades = String.Join(", ", grades);
+
+                    Console.Write($"Select grade ({availableGrades}): ");
+                    string inputGrade = Console.ReadLine();
+
+                    if (!Enum.TryParse(inputGrade, out Grade grade))
+                        throw new Exception("Grade value is invalid");
+
+                    assignments.Add(new GradeAssignmentDto { StudentId = student.Id, CourseId = courseId, Grade = grade});
+
+                    Console.WriteLine("Continue adding products? (y/n): ");
+                    if (Console.ReadLine().Trim().ToLower() != "y")
+                        break;
+                }
+
+                _studentService.AssignGrade(assignments);
+                Console.WriteLine("Grades assigned successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                Console.Write("Press enter to continue");
+                Console.ReadLine();
+            }
+        }
+
+        private void ViewStudentGrades() 
+        {
+            Console.WriteLine("Please enter the required information to assign a grade");
+            Console.Write("Student Code Number: ");
+
+            try
+            {
+                string studentCodeNumber = Console.ReadLine().Trim();
+                if (string.IsNullOrEmpty(studentCodeNumber))
+                    throw new Exception("'Student Code Number' is required");
+
+                var student = _studentService.GetByCodeNumber(studentCodeNumber);
+                var enrollments = _studentService.GetEnrollments(student.Id);
+
+                Console.WriteLine($"\nStudent Information\nStudent code number: {student.CodeNumber}\tName: {student.FirstName} {student.LastName}");
+
+                Console.WriteLine("\nStudent Performance");
+                foreach (var enrollment in enrollments)
+                    Console.WriteLine($"Id: {enrollment.Course.Id}\tTitle: {enrollment.Course.Title}\tGrade: {enrollment.Grade}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                Console.Write("Press enter to continue");
+                Console.ReadLine();
+            }
+        }
+
+        private StudentEvaluationDto ConsultStudentPeformance() 
+        {
+            Console.WriteLine("Please enter the required information to view the student performance");
+            Console.Write("Student Code Number: ");
+            var input = Console.ReadLine();
+
+            try
+            {
+                var evaluation = _studentService.GetEvaluationByCodeNumber(input);
+
+                Console.WriteLine($"\nStudent Information\nStudent code number: {evaluation.Student.CodeNumber}\tName: {evaluation.Student.FirstName} {evaluation.Student.LastName}");
+                Console.WriteLine("\nEnrolled courses");
+
+                foreach (var enrollment in evaluation.Enrollments)
+                {
+                    var grade = enrollment.Grade is null ? "-" : enrollment.Grade.ToString();
+                    Console.WriteLine($"{enrollment.CourseId}. {enrollment.Title}\t\t{grade}");
+                }
+
+                return evaluation;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
+        }
+
+        private void EvaluateStudentPerformance() 
+        {
+            var con = false;
+            var isValidUpdate = false;
+            var evaluation = ConsultStudentPeformance();
+
+            if (evaluation is null)
+                return;
+
+            Console.WriteLine($"\nValid grades: {string.Join(", ", Enum.GetNames(typeof(Grade)))}");
+
+            do
+            {
+                Console.WriteLine("\nPlease select the course you wish to grade");
+                Console.Write("Course Id: ");
+                var inputId = Console.ReadLine();
+
+                var isValid = Int32.TryParse(inputId, out int id);
+
+                if (!isValid) 
+                {
+                    Console.WriteLine("Course Id must be a numeric value");
+                    return;
+                }
+
+                var exists = evaluation.Enrollments.Exists(e => e.CourseId.Equals(id));
+
+                if (!exists) 
+                {
+                    Console.WriteLine("Student is not enrolled in this course");
+                    return;
+                }
+
+                Console.WriteLine("Grade: ");
+                var inputGrade = Console.ReadLine();
+
+                isValid = Enum.TryParse(inputGrade.ToUpper(), out Grade grade);
+
+                if (!isValid)
+                {
+                    Console.WriteLine("Grade is invalid");
+                    return;
+                }
+
+                int index = evaluation.Enrollments.FindIndex(e => e.CourseId.Equals(id));
+                evaluation.Enrollments.ElementAt(index).Grade = grade;
+
+                Console.Write("Assign another grade? (y/n): ");
+                var input = Console.ReadLine();
+
+                con = input.ToLower().Equals("y");
+
+                if (!con)
+                    isValidUpdate = true;
+            } while (con);
+
+            if (!isValidUpdate)
+                return;
+
+            _studentService.Evaluate(evaluation);
         }
     }
 }

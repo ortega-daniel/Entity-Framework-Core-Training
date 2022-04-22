@@ -1,4 +1,5 @@
 ﻿using CollegeApplication.Services.Abstractions;
+using Microsoft.EntityFrameworkCore;
 using Model;
 using Model.Entities;
 using Shared.Dtos;
@@ -14,7 +15,7 @@ namespace CollegeApplication.Services.Implementations
     {
         private readonly AppDbContext _context = new();
 
-        public void RegisterStudent(CourseRegistryDto dto)
+        public void RegisterCourse(CourseRegistryDto dto)
         {
             try
             {
@@ -25,6 +26,41 @@ namespace CollegeApplication.Services.Implementations
             {
                 throw new Exception(ex.Message);
             }
+        }
+
+        public List<CourseDto> GetAll()
+        {
+            var courses = _context.Courses
+                .Select(c => new CourseDto 
+                { 
+                    Id = c.Id,
+                    Title = c.Title,
+                    Credits = c.Credits
+                })
+                .ToList();
+
+            if (!courses.Any())
+                throw new Exception("There are no courses available");
+
+            return courses;
+        }
+
+        public List<CourseDto> GetAllAvailableByStudent(int studentId) 
+        {
+            var courses = _context.Courses
+                .Where(c => !c.Enrollments.Select(e => e.StudentId).Contains(studentId))
+                .Select(c => new CourseDto
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    Credits = c.Credits
+                })
+                .ToList();
+
+            if (!courses.Any())
+                throw new Exception("There are no courses available");
+
+            return courses;
         }
     }
 }

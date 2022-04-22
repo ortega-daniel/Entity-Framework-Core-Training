@@ -17,5 +17,11 @@ namespace Model.Entities
         public virtual Student Student { get; set; }
 
         public Enrollment() { }
+
+        public Enrollment(int courseId, int studentId)
+        {
+            CourseId = courseId;
+            StudentId = studentId;
+        }
     }
 }

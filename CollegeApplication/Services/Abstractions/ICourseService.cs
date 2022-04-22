@@ -9,6 +9,8 @@ namespace CollegeApplication.Services.Abstractions
 {
     public interface ICourseService
     {
-        void RegisterStudent(CourseRegistryDto dto);
+        List<CourseDto> GetAll();
+        List<CourseDto> GetAllAvailableByStudent(int studentId);
+        void RegisterCourse(CourseRegistryDto dto);
     }
 }

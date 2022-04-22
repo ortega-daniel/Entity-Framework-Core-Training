@@ -13,7 +13,7 @@ namespace Model.Entities
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public DateTime EnrollmentDate { get; set; }
-        public virtual ICollection<Enrollment> Students { get; set; }
+        public virtual ICollection<Enrollment> Enrollments { get; set; }
 
         public Student() { }
 
