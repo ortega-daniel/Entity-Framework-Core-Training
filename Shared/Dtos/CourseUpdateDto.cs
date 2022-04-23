@@ -4,22 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Model.Entities
+namespace Shared.Dtos
 {
-    public class Course
+    public class CourseUpdateDto
     {
         public int Id { get; set; }
         public string Title { get; set; }
         public int Credits { get; set; }
         public int Capacity { get; set; }
-        public virtual ICollection<Enrollment> Enrollments { get; set; }
-
-        public Course() { }
-
-        public Course(string title, int credits)
-        {
-            Title = title;
-            Credits = credits;
-        }
     }
 }

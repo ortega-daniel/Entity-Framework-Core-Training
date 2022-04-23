@@ -11,6 +11,8 @@ namespace CollegeApplication.Services.Abstractions
     {
         List<CourseDto> GetAll();
         List<CourseDto> GetAllAvailableByStudent(int studentId);
+        CourseDto GetById(int courseId);
         void RegisterCourse(CourseRegistryDto dto);
+        void Update(CourseUpdateDto courseUpdate);
     }
 }

@@ -17,5 +17,6 @@ namespace CollegeApplication.Services.Abstractions
         List<Enrollment> GetEnrollments(int studentId);
         void AssignGrade(List<GradeAssignmentDto> gradeAssignments);
         StudentEvaluationDto GetEvaluationByCodeNumber(string codeNumber);
+        void Evaluate(StudentEvaluationDto evaluation);
     }
 }

@@ -31,7 +31,7 @@ namespace CollegeApplication
             Console.WriteLine("3) Course enrollment");
             Console.WriteLine("4) Evaluate student performance");
             Console.WriteLine("5) View student performance");
-            Console.WriteLine("6) Esit course");
+            Console.WriteLine("6) Edit course");
             Console.WriteLine("0) Exit");
             Console.Write("\nYour option:");
 
@@ -61,6 +61,8 @@ namespace CollegeApplication
                     Console.ReadLine();
                     break;
                 case "6":
+                    Console.Clear();
+                    UpdateCourse();
                     break;
                 default:
                     break;
@@ -152,8 +154,11 @@ namespace CollegeApplication
                 Console.WriteLine($"\nStudent Information\nStudent code number: {student.CodeNumber}\tName: {student.FirstName} {student.LastName}");
                 
                 Console.WriteLine("\nAvailable courses");
-                foreach (var course in courses) 
-                    Console.WriteLine($"Id: {course.Id}\tTitle: {course.Title}\tCredits: {course.Credits}");
+                foreach (var course in courses)
+                {
+                    string capacity = course.Capacity != 0 ? $"{course.Capacity} spots left" : "Full";
+                    Console.WriteLine($"Id: {course.Id}\tTitle: {course.Title}\tCredits: {course.Credits}\tCapacity: {capacity}");
+                }
                 
                 Console.WriteLine("\nPlease choose a course");
                 Console.Write("Course Id: ");
@@ -358,6 +363,77 @@ namespace CollegeApplication
                 return;
 
             _studentService.Evaluate(evaluation);
+        }
+
+        private void UpdateCourse() 
+        {
+            Console.WriteLine("All Courses");
+            var courses = _courseService.GetAll();
+
+            foreach (var course in courses)
+                Console.WriteLine($"Id: {course.Id}\tTitle: {course.Title}\tCredits: {course.Credits}\tTotal Capacity: {course.Capacity}");
+
+            Console.WriteLine("\nPlease enter the required information to update a course");
+            CourseUpdateDto courseUpdate = new();
+
+            try
+            {
+                Console.Write("Course Id: ");
+                string input = Console.ReadLine().Trim();
+
+                if (!Int32.TryParse(input, out int courseId))
+                    throw new Exception("Course Id must be a numeric value");
+
+                var course = _courseService.GetById(courseId);
+
+                courseUpdate.Id = course.Id;
+                Console.WriteLine("\nPlease enter the new values for course (empty=old value)");
+
+                Console.Write("\nTitle: ");
+                input = Console.ReadLine().Trim();
+                courseUpdate.Title = string.IsNullOrEmpty(input) ? course.Title : input;
+
+                Console.Write("Credits: ");
+                input = Console.ReadLine().Trim();
+
+                if (string.IsNullOrEmpty(input))
+                {
+                    courseUpdate.Credits = course.Credits;
+                }
+                else
+                {
+                    if (!Int32.TryParse(input, out int credits))
+                        throw new Exception("Credits must be a numeric value");
+
+                    courseUpdate.Credits = credits;
+                }
+
+                Console.Write("Capacity: ");
+                input = Console.ReadLine().Trim();
+                if (string.IsNullOrEmpty(input))
+                {
+                    courseUpdate.Capacity = course.Capacity;
+                }
+                else
+                {
+                    if (!Int32.TryParse(input, out int capacity))
+                        throw new Exception("Capacity must be a numeric value");
+
+                    courseUpdate.Capacity = capacity;
+                }
+
+                _courseService.Update(courseUpdate);
+                Console.WriteLine("Course updated successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                Console.Write("Press enter to continue");
+                Console.ReadLine();
+            }
         }
     }
 }

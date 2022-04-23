@@ -35,7 +35,8 @@ namespace CollegeApplication.Services.Implementations
                 { 
                     Id = c.Id,
                     Title = c.Title,
-                    Credits = c.Credits
+                    Credits = c.Credits,
+                    Capacity = c.Capacity
                 })
                 .ToList();
 
@@ -53,7 +54,8 @@ namespace CollegeApplication.Services.Implementations
                 {
                     Id = c.Id,
                     Title = c.Title,
-                    Credits = c.Credits
+                    Credits = c.Credits,
+                    Capacity = c.Capacity - c.Enrollments.Count
                 })
                 .ToList();
 
@@ -61,6 +63,39 @@ namespace CollegeApplication.Services.Implementations
                 throw new Exception("There are no courses available");
 
             return courses;
+        }
+
+        public CourseDto GetById(int courseId) 
+        {
+            var course = _context.Courses
+                .Select(c => new CourseDto 
+                { 
+                    Id = c.Id, 
+                    Title = c.Title,
+                    Credits = c.Credits,
+                    Capacity = c.Capacity
+                })
+                .FirstOrDefault(c => c.Id.Equals(courseId));
+            
+            if (course == null)
+                throw new Exception("Course does not exist");
+
+            return course;
+        }
+
+        public void Update(CourseUpdateDto courseUpdate) 
+        {
+            var course = _context.Courses
+                .FirstOrDefault(c => c.Id.Equals(courseUpdate.Id));
+
+            if (course is null)
+                throw new Exception("Course does not exist");
+
+            course.Title = courseUpdate.Title;
+            course.Credits = courseUpdate.Credits;
+            course.Capacity = courseUpdate.Capacity;
+
+            _context.SaveChanges();
         }
     }
 }

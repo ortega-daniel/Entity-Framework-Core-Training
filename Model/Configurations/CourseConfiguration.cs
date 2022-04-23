@@ -14,6 +14,7 @@ namespace Model.Configurations
         public void Configure(EntityTypeBuilder<Course> builder)
         {
             builder.HasIndex(c => c.Title).IsUnique();
+            builder.Property(c => c.Capacity).HasDefaultValue(10);
         }
     }
 }

@@ -11,5 +11,6 @@ namespace Shared.Dtos
         public int Id { get; set; }
         public string Title { get; set; }
         public int Credits { get; set; }
+        public int Capacity { get; set; }
     }
 }

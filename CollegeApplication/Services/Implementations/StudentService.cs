@@ -63,6 +63,9 @@ namespace CollegeApplication.Services.Implementations
             if (course.Enrollments.Select(e => e.StudentId).Contains(student.Id))
                 throw new Exception("Student is already enrolled in this course");
 
+            if (course.Enrollments.Count >= course.Capacity)
+                throw new Exception("Course is full");
+
             var enrollment = _context.Enrollments.Add(new Enrollment(course.Id, student.Id));
             _context.SaveChanges();
 
