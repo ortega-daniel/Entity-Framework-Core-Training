@@ -20,6 +20,8 @@ namespace Model
         {
             builder.ApplyConfiguration(new StudentConfiguration());
             builder.ApplyConfiguration(new CourseConfiguration());
+            builder.ApplyConfiguration(new EnrollmentConfiguration());
+            builder.Entity<Enrollment>().HasOne(e => e.Course).WithMany(c => c.Enrollments);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options) 

@@ -32,6 +32,8 @@ namespace CollegeApplication
             Console.WriteLine("4) Evaluate student performance");
             Console.WriteLine("5) View student performance");
             Console.WriteLine("6) Edit course");
+            Console.WriteLine("7) Drop student");
+            Console.WriteLine("8) Delete course");
             Console.WriteLine("0) Exit");
             Console.Write("\nYour option:");
 
@@ -63,6 +65,14 @@ namespace CollegeApplication
                 case "6":
                     Console.Clear();
                     UpdateCourse();
+                    break;
+                case "7":
+                    Console.Clear();
+                    DropStudentCourse();
+                    break;
+                case "8":
+                    Console.Clear();
+                    DeleteCourse();
                     break;
                 default:
                     break;
@@ -149,7 +159,6 @@ namespace CollegeApplication
 
                 var student = _studentService.GetByCodeNumber(courseAssignment.StudentCodeNumber);
                 var courses = _courseService.GetAllAvailableByStudent(student.Id);
-
 
                 Console.WriteLine($"\nStudent Information\nStudent code number: {student.CodeNumber}\tName: {student.FirstName} {student.LastName}");
                 
@@ -424,6 +433,77 @@ namespace CollegeApplication
 
                 _courseService.Update(courseUpdate);
                 Console.WriteLine("Course updated successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                Console.Write("Press enter to continue");
+                Console.ReadLine();
+            }
+        }
+
+        private void DropStudentCourse() 
+        {
+            Console.WriteLine("Please enter the required information to drop a student");
+            Console.Write("Student Code Number: ");
+
+            try
+            {
+                string studentCodeNumber = Console.ReadLine().Trim();
+                if (string.IsNullOrEmpty(studentCodeNumber))
+                    throw new Exception("'Student Code Number' is required");
+
+                var student = _studentService.GetByCodeNumber(studentCodeNumber);
+                var enrollments = _studentService.GetEnrollments(student.Id);
+
+                Console.WriteLine($"\nStudent Information\nStudent code number: {student.CodeNumber}\tName: {student.FirstName} {student.LastName}");
+
+                Console.WriteLine("\nEnrolled Courses");
+                foreach (var enrollment in enrollments)
+                    Console.WriteLine($"Id: {enrollment.Course.Id}\tTitle: {enrollment.Course.Title}\tGrade: {enrollment.Grade}");
+
+                Console.Write("\nCourse Id: ");
+                string input = Console.ReadLine().Trim();
+
+                if (!Int32.TryParse(input, out int courseId))
+                    throw new Exception("Course Id must be a numeric value");
+
+                _studentService.DropStudentCourse(new DropStudentCourseDto { StudentId = student.Id, CourseId = courseId });
+                Console.WriteLine("Student dropped successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                Console.Write("Press enter to continue");
+                Console.ReadLine();
+            }
+        }
+
+        private void DeleteCourse() 
+        {
+            Console.WriteLine("Please enter the required information to delete a course");
+
+            try
+            {
+                var courses = _courseService.GetAll();
+
+                foreach (var course in courses)
+                    Console.WriteLine($"Id: {course.Id}\tTitle: {course.Title}");
+
+                Console.Write("\nCourse Id: ");
+                string input = Console.ReadLine().Trim();
+
+                if (!Int32.TryParse(input, out int courseId))
+                    throw new Exception("Course Id must be a numeric value");
+
+                _courseService.Delete(new DeleteCourseDto { Id = courseId });
+                Console.WriteLine("Course deleted successfully");
             }
             catch (Exception ex)
             {

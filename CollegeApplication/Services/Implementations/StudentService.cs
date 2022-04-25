@@ -55,22 +55,37 @@ namespace CollegeApplication.Services.Implementations
             if (student is null)
                 throw new ArgumentNullException("Student does not exist");
 
-            var course = _context.Courses.Include(c => c.Enrollments).FirstOrDefault(c => c.Id.Equals(courseAssignment.CourseId));
+            var course = _context.Courses
+                .Include(c => c.Enrollments)
+                .FirstOrDefault(c => c.Id.Equals(courseAssignment.CourseId));
 
             if (course is null)
                 throw new ArgumentNullException("Course does not exist");
 
-            if (course.Enrollments.Select(e => e.StudentId).Contains(student.Id))
-                throw new Exception("Student is already enrolled in this course");
+            var enrollment = _context.Enrollments
+                .FirstOrDefault(e => e.StudentId.Equals(student.Id) && e.CourseId.Equals(course.Id));
 
-            if (course.Enrollments.Count >= course.Capacity)
-                throw new Exception("Course is full");
+            if (enrollment is not null)
+            {
+                if (enrollment.IsActive)
+                {
+                    throw new Exception("Student is already enrolled in this course");
+                }
+                else
+                {
+                    if (course.Enrollments.Where(e => e.IsActive).ToList().Count >= course.Capacity)
+                        throw new Exception("Course is full");
 
-            var enrollment = _context.Enrollments.Add(new Enrollment(course.Id, student.Id));
-            _context.SaveChanges();
+                    enrollment.IsActive = true;
+                }
+            }
+            else 
+            {
+                var newEnrollment = _context.Enrollments.Add(new Enrollment(course.Id, student.Id));
+                student.Enrollments.Add(newEnrollment.Entity);
+                course.Enrollments.Add(newEnrollment.Entity);
+            }
 
-            student.Enrollments.Add(enrollment.Entity);
-            course.Enrollments.Add(enrollment.Entity);
             _context.SaveChanges();
         }
 
@@ -78,6 +93,7 @@ namespace CollegeApplication.Services.Implementations
         {
             var enrollments = _context.Enrollments
                 .Where(e => e.StudentId == studentId)
+                .Where(e => e.IsActive)
                 .Include(e => e.Student)
                 .Include(e => e.Course)
                 .ToList();
@@ -96,7 +112,7 @@ namespace CollegeApplication.Services.Implementations
             foreach (var assignment in assignments)
             {
                 var enrollment = _context.Enrollments
-                .FirstOrDefault(e => e.StudentId.Equals(assignment.StudentId) && e.CourseId.Equals(assignment.CourseId));
+                .FirstOrDefault(e => e.StudentId.Equals(assignment.StudentId) && e.CourseId.Equals(assignment.CourseId) && e.IsActive);
 
                 if (enrollment is null)
                     throw new Exception("Student is not enrolled in this course");
@@ -161,6 +177,18 @@ namespace CollegeApplication.Services.Implementations
             {
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        public void DropStudentCourse(DropStudentCourseDto dto) 
+        {
+            var enrollment = _context.Enrollments
+                .FirstOrDefault(e => e.StudentId.Equals(dto.StudentId) && e.CourseId.Equals(dto.CourseId) && e.IsActive);
+
+            if (enrollment == null)
+                throw new Exception("Student is not enrolled in this course");
+
+            enrollment.IsActive = false;
+            _context.SaveChanges();
         }
     }
 }

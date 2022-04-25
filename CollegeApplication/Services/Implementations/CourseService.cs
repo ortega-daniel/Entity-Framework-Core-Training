@@ -49,13 +49,13 @@ namespace CollegeApplication.Services.Implementations
         public List<CourseDto> GetAllAvailableByStudent(int studentId) 
         {
             var courses = _context.Courses
-                .Where(c => !c.Enrollments.Select(e => e.StudentId).Contains(studentId))
+                .Where(c => !c.Enrollments.Where(e => e.IsActive).Select(e => e.StudentId).Contains(studentId))
                 .Select(c => new CourseDto
                 {
                     Id = c.Id,
                     Title = c.Title,
                     Credits = c.Credits,
-                    Capacity = c.Capacity - c.Enrollments.Count
+                    Capacity = c.Capacity - c.Enrollments.Where(e => e.IsActive).Count()
                 })
                 .ToList();
 
@@ -95,6 +95,17 @@ namespace CollegeApplication.Services.Implementations
             course.Credits = courseUpdate.Credits;
             course.Capacity = courseUpdate.Capacity;
 
+            _context.SaveChanges();
+        }
+
+        public void Delete(DeleteCourseDto dto) 
+        {
+            var course = _context.Courses.FirstOrDefault(c => c.Id.Equals(dto.Id));
+
+            if (course is null)
+                throw new Exception("Course does not exist");
+
+            _context.Courses.Remove(course);
             _context.SaveChanges();
         }
     }

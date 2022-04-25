@@ -9,6 +9,7 @@ namespace CollegeApplication.Services.Abstractions
 {
     public interface ICourseService
     {
+        void Delete(DeleteCourseDto dto);
         List<CourseDto> GetAll();
         List<CourseDto> GetAllAvailableByStudent(int studentId);
         CourseDto GetById(int courseId);
